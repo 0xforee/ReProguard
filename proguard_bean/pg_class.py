@@ -28,6 +28,24 @@ class PGClass:
         else:
             self.fields[name] = [field]
 
+    def match_method(self, method):
+        if self.methods:
+            md_list = self.methods[method.name]
+            for md in md_list:
+                if md.match(method):
+                    return md
+
+        return None
+
+    def match_method(self, field):
+        if self.fields:
+            fd_list = self.fields[field.name]
+            for fd in fd_list:
+                if fd.match(field):
+                    return fd
+
+        return None
+
     def __str__(self):
         return 'ProGuardClass: ' + str(self.__dict__) + '\n' + str(self.methods) + '\n' + str(self.fields)
 
@@ -36,6 +54,9 @@ class PGField:
     name = ''
     type = ''
 
+    def match(self, other):
+        return self.type == other.type
+
     def __str__(self):
         return "ProguardField: " + str(self.__dict__)
 
@@ -43,7 +64,7 @@ class PGField:
 class PGMethod:
     name = ''
     return_type = ''
-    args = []
+    args = []  # 注意顺序
 
     def get_return_type(self):
         return self.return_type
@@ -53,6 +74,15 @@ class PGMethod:
 
     def add_arg(self, arg):
         self.args.append(arg)
+
+    def match(self, other):
+        return self.return_type == other.return_type \
+               and self.args == other.args
+
+    def __eq__(self, other):
+        return self.name == other.name \
+               and self.return_type == other.return_type \
+               and self.args == other.args
 
     def __str__(self) -> str:
         return 'ProGuardMethod: ' + str(self.__dict__)

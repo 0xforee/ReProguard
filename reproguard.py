@@ -2,16 +2,17 @@
 # coding: utf-8
 
 import re
-from MappingLoader import MappingLoader
-from MappingLoader import ProGuardMethod
+from proguard_bean.pg_class import PGClass, PGMethod
+import transform.transform_manager as transform_manager
+from transform.transform_api import Request, Response
+
 
 class Transform:
     @staticmethod
     def transform_method(info):
-        method = ProGuardMethod()
-        engine = MappingLoader()
-        transformed_info = info
-        after_class = ''
+        cla = PGClass()
+        method = PGMethod()
+        response = None
         if isinstance(info, str):
             # split with space
             method.return_type = info[:info.find(r' ')]
@@ -31,61 +32,14 @@ class Transform:
                 for arg in args.split(','):
                     method.add_arg(arg.strip())
 
-            cla = engine.find_class(cla_name)
-            if cla:
-                after_class = cla.name
-                if method.name in cla.methods:
-                    methods = cla.methods[method.name]
-                    if isinstance(methods, list):
-                        for md in methods:
-                            if isinstance(md, ProGuardMethod):
-                                # match return type
-                                if md.return_type == method.return_type:
-                                    # match args
-                                    if md.args == method.args:
-                                        transformed_info = md
-                    else:
-                        transformed_info = methods
+            # transform
+            cla.name = cla_name
+            cla.add_method(method.name, method)
 
-        after_args = ''
-        if isinstance(transformed_info, ProGuardMethod):
-            for arg in transformed_info.args:
-                after_args = after_args + ',' + arg
-            after = transformed_info.return_type + ' ' + after_class + "." + transformed_info.name + '(' + after_args[1:] + ')'
-        else:
-            after = 'not matched'
-        print('before: %s' % info + '\nafter: ' + after)
+            response = transform_manager.transform(Request(cla))
+
+        print('before: %s, after: %s' % (info, response) )
         print('------------------------')
-
-    @staticmethod
-    def transform_field():
-        pass
-
-    @staticmethod
-    def transform_class():
-        pass
-
-
-class ProGuardClass:
-    name = ''
-    proguard_name = ''
-    methods = []
-
-    def add_method(self, method):
-        self.methods.append(method)
-
-    def __str__(self):
-        return 'ProGuardClass: ' + str(self.__dict__)
-
-
-class ProGuardField:
-    pass
-
-
-class Args:
-    name = ''
-    type = ''
-
 
 
 def parse_line(line):
