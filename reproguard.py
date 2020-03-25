@@ -5,7 +5,7 @@ import re
 from proguard_bean.pg_class import PGClass, PGMethod
 import transform.transform_manager as transform_manager
 from transform.transform_api import Request, Response
-
+import pprint
 
 class Transform:
     @staticmethod
@@ -38,8 +38,21 @@ class Transform:
 
             response = transform_manager.transform(Request(cla))
 
-        print('before: %s, after: %s' % (info, response) )
+        # print('before: %s, after: %s' % (info, response) )
+        pretty_print(response)
         print('------------------------')
+
+
+
+def pretty_print(clas, indent=0):
+
+    print(' ' * indent +  type(clas).__name__ +  ':')
+    indent += 4
+    for k,v in clas.__dict__.items():
+        if '__dict__' in dir(v):
+            pretty_print(v,indent)
+        else:
+            print(' ' * indent +  k + ': ' + str(v))
 
 
 def parse_line(line):

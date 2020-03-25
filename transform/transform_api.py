@@ -3,8 +3,6 @@
 
 
 class Request:
-    pg_class = None
-
     def __init__(self, pg_class):
         self.pg_class = pg_class
 
@@ -13,9 +11,9 @@ class Request:
 
 
 class Response:
-    request = None
-    trans_class = None
-
     def __init__(self, request, trans_class):
         self.request = request
         self.trans_class = trans_class
+
+    def __str__(self):
+        return str(self.__dict__)

@@ -8,12 +8,14 @@ class PGClass:
     """
     混淆以类为单位
     """
-    # 类名
-    name = ''
-    # 方法，以混淆之后的值为 key，以 PGMethod 列表为值
-    methods = {}
-    # 字段，以混淆之后的值为 key，以 PGField 列表为值
-    fields = {}
+
+    def __init__(self):
+        # 类名
+        self.name = ''
+        # 方法，以混淆之后的值为 key，以 PGMethod 列表为值
+        self.methods = {}
+        # 字段，以混淆之后的值为 key，以 PGField 列表为值
+        self.fields = {}
 
     def add_method(self, name, method):
         # 可能会出现多个方法的混淆名称是相同的情况，所以对于这些方法，key是相同的，那么就只能以列表存储，通过参数比对还原
@@ -37,7 +39,7 @@ class PGClass:
 
         return None
 
-    def match_method(self, field):
+    def match_field(self, field):
         if self.fields:
             fd_list = self.fields[field.name]
             for fd in fd_list:
@@ -47,12 +49,15 @@ class PGClass:
         return None
 
     def __str__(self):
-        return 'ProGuardClass: ' + str(self.__dict__) + '\n' + str(self.methods) + '\n' + str(self.fields)
+        return 'ProGuardClass: ' + str(self.__dict__)
+
+    __repr__ = __str__
 
 
 class PGField:
-    name = ''
-    type = ''
+    def __init__(self):
+        self.name = ''
+        self.type = ''
 
     def match(self, other):
         return self.type == other.type
@@ -60,11 +65,15 @@ class PGField:
     def __str__(self):
         return "ProguardField: " + str(self.__dict__)
 
+    __repr__ = __str__
+
 
 class PGMethod:
-    name = ''
-    return_type = ''
-    args = []  # 注意顺序
+
+    def __init__(self):
+        self.name = ''
+        self.return_type = ''
+        self.args = []  # 注意顺序
 
     def get_return_type(self):
         return self.return_type
@@ -86,3 +95,5 @@ class PGMethod:
 
     def __str__(self) -> str:
         return 'ProGuardMethod: ' + str(self.__dict__)
+
+    __repr__ = __str__

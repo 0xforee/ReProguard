@@ -9,10 +9,9 @@ import config
 
 
 class MappingLoader:
-    cache = {}
-    mapping_file = None
 
     def __init__(self):
+        self.cache = {}
         self.mapping_file = open(config.MAPPING_FILE)
 
     def __del__(self):
