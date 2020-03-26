@@ -42,7 +42,7 @@ class PGClass:
             return methods[0]
         for method in methods:
             source_scope = method.get_source_scope()
-            if source_scope and line_number and source_scope.split(':')[0] <= line_number <= source_scope.split(':')[1]:
+            if source_scope and line_number and int(source_scope.split(':')[0]) <= int(line_number) <= int(source_scope.split(':')[1]):
                 return method
 
         return None
