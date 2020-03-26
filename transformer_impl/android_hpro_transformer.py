@@ -14,5 +14,5 @@ class AndroidHprofTransformer(ITransformer):
     def __init__(self):
         pass
 
-    def start(self, file):
+    def start(self, file_path):
         pass

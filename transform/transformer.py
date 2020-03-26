@@ -6,10 +6,10 @@ from abc import ABCMeta
 
 class ITransformer(metaclass=ABCMeta):
     @classmethod
-    def start(cls, file):
+    def start(cls, file_path):
         """
         转换器实现自己的转换方式
-        :param file:
+        :param file_path:
         :return:
         """
         pass

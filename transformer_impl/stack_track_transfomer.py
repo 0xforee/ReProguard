@@ -11,9 +11,10 @@ class StackTraceTransformer(ITransformer):
     def __init__(self):
         pass
 
-    def start(self, file):
-        for line in file:
-            stack_trace.parse_line(line)
+    def start(self, file_path):
+        with open(file_path) as file:
+            for line in file:
+                stack_trace.parse_line(line)
 
     def parse_line(self, line):
         obj = re.search(r'[ $0-9a-zA-Z.:]+\([$0-9a-zA-Z.:]*\)+', line)
