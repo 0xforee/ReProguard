@@ -14,7 +14,7 @@ class MappingLoader:
         self.load_all = False
         self.cache = {}
         self.mapping_file = open(config.MAPPING_FILE)
-        self.__load_all_class()
+        self.load_all_class()
 
     def __del__(self):
         if not self.mapping_file.closed:
@@ -37,7 +37,7 @@ class MappingLoader:
 
         return cla
 
-    def __load_all_class(self):
+    def load_all_class(self):
         """
         加载所有的类
         :return:
@@ -47,7 +47,7 @@ class MappingLoader:
             if line.startswith(' '):
                 self.__parse_other(line, cla)
             else:
-                self.__parse_class(line)
+                cla = self.__parse_class(line)
 
         self.load_all = True
 
@@ -155,6 +155,8 @@ class MappingLoader:
 
 if __name__ == '__main__':
     maping = MappingLoader()
-    test_class = maping.find_class('androidx.core.app.Person')
-    print(test_class)
+    # test_class = maping.find_class('androidx.core.app.Person')
+    # print(test_class)
+    maping.load_all_class()
+    print('hahaha')
 
