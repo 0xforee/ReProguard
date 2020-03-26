@@ -30,23 +30,99 @@ class PGClass:
         else:
             self.fields[name] = [field]
 
-    def match_method(self, method):
-        if self.methods:
-            md_list = self.methods[method.name]
-            for md in md_list:
-                if md.match(method):
-                    return md
+    def find_method(self, proguard_name, line_number):
+        if not self.methods:
+            return None
+        if not (proguard_name in self.methods):
+            return None
+        methods = self.methods[proguard_name]
+        if not methods:
+            return None
+        if len(methods) == 1:
+            return methods[0]
+        for method in methods:
+            source_scope = method.get_source_scope()
+            if source_scope and line_number and source_scope.split(':')[0] <= line_number <= source_scope.split(':')[1]:
+                return method
 
         return None
 
-    def match_field(self, field):
-        if self.fields:
-            fd_list = self.fields[field.name]
-            for fd in fd_list:
-                if fd.match(field):
-                    return fd
+    def find_methods(self, proguard_name, args=None, return_type=None):
+        if not self.methods:
+            return None
+        if not (proguard_name in self.methods):
+            return None
+        methods = self.methods[proguard_name]
+        if not methods:
+            return None
+
+        if args:
+            methods = PGClass.__filter_by_args(args, methods)
+
+        if return_type:
+            methods = PGClass.__filter_by_return_type(return_type, methods)
+
+        return methods
+
+    @staticmethod
+    def __filter_by_args(args, methods):
+        return_methods = []
+        for method in methods:
+            if method.args == args:
+                return_methods.append(method)
+
+        return return_methods
+
+    @staticmethod
+    def __filter_by_return_type(return_type, methods):
+        return_methods = []
+        for method in methods:
+            if method.return_type == return_type:
+                return_methods.append(method)
+
+        return return_methods
+
+    def find_field(self, proguard_name, field_type):
+        if not self.fields:
+            return None
+        if not (proguard_name in self.fields):
+            return None
+        fields = self.fields[proguard_name]
+        if not fields:
+            return None
+
+        for field in fields:
+            if field.type == field_type:
+                return field
 
         return None
+
+    def pretty_method(self, method, need_args=False, need_return_type=False):
+        if not method:
+            return None
+
+        pretty_args = ''
+        if need_args and method.args:
+            pretty_args += '('
+            for arg in method.args:
+                pretty_args += (arg + ',')
+
+        pretty_args = pretty_args.strip(',')
+
+        pretty_return_type = ''
+        if need_return_type and method.return_type:
+            pretty_return_type = method.return_type + ' '
+
+        return pretty_return_type + self.name + '.' + method.name + pretty_args
+
+    def pretty_field(self, field, need_type=False):
+        if not field:
+            return None
+        pretty_type = ''
+        if need_type and field.type:
+            pretty_type = field.type + ' '
+
+        return pretty_type + field.name
 
     def __str__(self):
         return 'ProGuardClass: ' + str(self.__dict__)
@@ -58,9 +134,6 @@ class PGField:
     def __init__(self):
         self.name = ''
         self.type = ''
-
-    def match(self, other):
-        return self.type == other.type
 
     def __str__(self):
         return "ProguardField: " + str(self.__dict__)
@@ -74,6 +147,7 @@ class PGMethod:
         self.name = ''
         self.return_type = ''
         self.args = []  # 注意顺序
+        self.source_scope = ''  # 方法所在的源码行号范围，例，23:32
 
     def get_return_type(self):
         return self.return_type
@@ -84,14 +158,8 @@ class PGMethod:
     def add_arg(self, arg):
         self.args.append(arg)
 
-    def match(self, other):
-        return self.return_type == other.return_type \
-               and self.args == other.args
-
-    def __eq__(self, other):
-        return self.name == other.name \
-               and self.return_type == other.return_type \
-               and self.args == other.args
+    def get_source_scope(self):
+        return self.source_scope
 
     def __str__(self) -> str:
         return 'ProGuardMethod: ' + str(self.__dict__)

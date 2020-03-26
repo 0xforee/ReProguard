@@ -11,8 +11,10 @@ import config
 class MappingLoader:
 
     def __init__(self):
+        self.load_all = False
         self.cache = {}
         self.mapping_file = open(config.MAPPING_FILE)
+        self.__load_all_class()
 
     def __del__(self):
         if not self.mapping_file.closed:
@@ -26,9 +28,50 @@ class MappingLoader:
         if proguard_cla_name in self.cache:
             return self.cache[proguard_cla_name]
 
+        if self.load_all:
+            return None
+
         cla = self.__load_class(proguard_cla_name)
         if cla:
             self.cache[proguard_cla_name] = cla
+
+        return cla
+
+    def __load_all_class(self):
+        """
+        加载所有的类
+        :return:
+        """
+        cla = None
+        for line in self.mapping_file:
+            if line.startswith(' '):
+                self.__parse_other(line, cla)
+            else:
+                self.__parse_class(line)
+
+        self.load_all = True
+
+    def __parse_other(self, line, cla):
+        if not cla:
+            return
+        if line.find('(') != -1:
+            result = MappingLoader.build_method(line)
+            cla.add_method(result[0], result[1])
+        else:
+            # read field
+            result = MappingLoader.build_field(line)
+            cla.add_field(result[0], result[1])
+
+    def __parse_class(self, line):
+        cla = None
+        cla_list = line.split('->')
+        if len(cla_list) > 1:
+            origin_cla = cla_list[0].strip()
+            proguard_cla = cla_list[1].strip().strip(':')
+            # load class
+            cla = PGClass()
+            cla.name = origin_cla
+            self.cache[proguard_cla] = cla
 
         return cla
 
@@ -70,6 +113,7 @@ class MappingLoader:
                     result = MappingLoader.build_field(line)
                     cla.add_field(result[0], result[1])
 
+        self.mapping_file.seek(0, 0)
         return cla
 
     @staticmethod
@@ -82,6 +126,7 @@ class MappingLoader:
             md.return_type = method[:method.find(' ')]
             # 可能前边有行号
             if re.match(r'^\d', md.return_type):
+                md.source_scope = md.return_type[:md.return_type.rfind(':')]
                 md.return_type = md.return_type[md.return_type.rfind(':') + 1:]
 
             md.name = method[method.find(' ') + 1: method.find('(')]
