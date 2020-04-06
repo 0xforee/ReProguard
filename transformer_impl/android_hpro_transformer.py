@@ -60,7 +60,7 @@ class AndroidHprofTransformer(ITransformer):
     def __init__(self):
         pass
 
-    def start(self, file_path):
+    def start(self, config):
         self.parse_hprof()
 
     def parse_hprof(self):

@@ -11,9 +11,9 @@ class StackTraceTransformer(ITransformer):
     def __init__(self):
         pass
 
-    def start(self, file_path):
-        with open(file_path) as file:
-            for line in file:
+    def start(self, config):
+        with open(config.get_input_path()) as inputx:
+            for line in inputx:
                 stack_trace.parse_line(line)
 
     def parse_line(self, line):
