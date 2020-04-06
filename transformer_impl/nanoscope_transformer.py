@@ -8,7 +8,7 @@ import transform.transform_manager as transform_manager
 from transform.transform_api import Request, Response
 
 
-class NanoScopeTransformer(ITransformer):
+class NanoscopeTransformer(ITransformer):
     def __init__(self):
         pass
 
@@ -85,7 +85,7 @@ if __name__ == '__main__':
     with open('output', 'w') as out:
 
         magic_start = r'<script type="text/plain" id="tracedata">'
-        with open('test.html') as input_file:
+        with open('../test.html') as input_file:
             for line in input_file:
                 if line.startswith(magic_start):
                     # deal with current line

@@ -12,52 +12,56 @@ class StackTraceTransformer(ITransformer):
         pass
 
     def start(self, config):
-        with open(config.get_input_path()) as inputx:
-            for line in inputx:
-                stack_trace.parse_line(line)
+        with open(config.get_output_path(), 'w') as output:
+            with open(config.get_input_path()) as input_file:
+                for line in input_file:
+                    trans_line = self.parse_line(line)
+                    output.write(trans_line)
 
     def parse_line(self, line):
         obj = re.search(r'[ $0-9a-zA-Z.:]+\([$0-9a-zA-Z.:]*\)+', line)
         if obj:
-            print(obj.group())
-            self.transform_method(line, obj.group())
+            trans = self.transform_method(line, obj.group())
+            if trans:
+                return trans
 
-    def transform_method(self, origin_line, info):
-        if isinstance(info, str):
-            info = info.strip()
-            other = info[info.find(r' ') + 1:]
-            pre = other[:other.find('(')]
-            method_args = []
+        return line
 
-            cla_name = pre[:pre.rfind('.')]
-            method_name = pre[pre.rfind('.') + 1:]
-            method_line_number = ''
+    def transform_method(self, origin_line: str, info: str):
+        info = info.strip()
+        other = info[info.find(r' ') + 1:]
+        pre = other[:other.find('(')]
+        method_args = []
 
-            # args exits
-            if other[other.find('(') + 1] == ')':
-                pass
+        cla_name = pre[:pre.rfind('.')]
+        method_name = pre[pre.rfind('.') + 1:]
+        method_line_number = ''
+
+        # args exits
+        if other[other.find('(') + 1] == ')':
+            pass
+        else:
+            if other.find(':'):  # 包含源码信息而不是参数信息
+                method_line_number = other[other.find(':') + 1:other.find(')')]
             else:
-                if other.find(':'): # 包含源码信息而不是参数信息
-                    method_line_number = other[other.find(':') + 1:other.find(')')]
-                else:
-                    args = other[other.find('(') + 1: other.find(')')]
-                    for arg in args.split(','):
-                        method_args.append(arg.strip())
+                args = other[other.find('(') + 1: other.find(')')]
+                for arg in args.split(','):
+                    method_args.append(arg.strip())
 
-            # transform
-            response = transform_manager.transform(Request(cla_name))
+        # transform
+        response = transform_manager.transform(Request(cla_name))
 
-            if response:
-                trans_class = response.get_trans_class()
-                if isinstance(trans_class, PGClass):
-                    method = trans_class.find_method(method_name, method_line_number)
-                    trans_method = trans_class.pretty_method(method)
+        if response:
+            trans_class = response.get_trans_class()
+            if isinstance(trans_class, PGClass):
+                method = trans_class.find_method(method_name, method_line_number)
+                trans_method = trans_class.pretty_method(method)
 
-                    if trans_method:
-                        trans = origin_line.replace(info[info.find(' ') + 1:info.find('(')], trans_method)
-                        print(trans)
+                if trans_method:
+                    trans = origin_line.replace(info[info.find(' ') + 1:info.find('(')], trans_method)
+                    return trans
 
-            print('---------------------')
+        return None
 
 
 def pretty_print(clas, indent=0):
