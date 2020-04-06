@@ -89,7 +89,6 @@ class NanoscopeTransformer(ITransformer):
                     trans_method = trans_class.pretty_method(methods[0], True, True)
                     if trans_method:
                         trans = origin_line.replace(info[info.find(':') + 1:info.find(')') + 1], trans_method)
-                        print(trans)
                         return trans
 
         return origin_line
