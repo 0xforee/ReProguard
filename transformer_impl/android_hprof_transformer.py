@@ -32,13 +32,14 @@ class AndroidHprofTransformer(ITransformer):
                 if name.find(r'.') != -1:
                     # out.write(name + '\n')
                     trans = self.transform(name)
-                    print('before: ' + name + '\nafter: ' + trans)
+                    # print('before: ' + name + '\nafter: ' + trans)
                     new_length = 4 + len(trans)
                     new_len_byte = new_length.to_bytes(4, byteorder='big', signed=True)
                     self.out_file.write(new_len_byte)
                     self.out_file.write(id)
                     self.out_file.write(bytes(trans, encoding="utf8"))
                 else:
+                    # TODO: parse field (do not have method)
                     print('other: ' + name)
                     self.out_file.write(length.to_bytes(4, byteorder='big', signed=True))
                     self.out_file.write(id)
