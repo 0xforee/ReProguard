@@ -11,6 +11,11 @@ class ByteBuffer:
         self.file_length = self.file.tell()
         self.file.seek(0, 0)
 
+    def get_remain(self):
+        if self.has_remaining():
+            return self.file_length - self.offset
+        return None
+
     def has_remaining(self):
         return self.offset < self.file_length
 
@@ -24,14 +29,20 @@ class ByteBuffer:
         self.file.seek(self.offset)
         return result
 
+    def read_raw_char(self):
+        return self.read_byte(16)
+
     def read_char(self):
-        result = self.read_byte(16)
-        return bytes.decode(result)
+        return bytes.decode(self.read_raw_char())
+
+    def read_raw_int(self):
+        return self.read_byte(4)
 
     def read_int(self):
-        result = self.read_byte(4)
-        return int.from_bytes(result, byteorder=self.order)
+        return int.from_bytes(self.read_raw_int(), byteorder=self.order)
+
+    def read_raw_long(self):
+        return self.read_byte(8)
 
     def read_long(self):
-        result = self.read_byte(8)
-        return int.from_bytes(result, byteorder=self.order)
+        return int.from_bytes(self.read_raw_long(), byteorder=self.order)
