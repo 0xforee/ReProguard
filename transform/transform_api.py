@@ -1,6 +1,8 @@
 #!/bin/python
 # coding: utf-8
 
+from proguard_bean.pg_class import PGClass, PGMethod
+
 
 class Request:
     def __init__(self, pg_class_name):
@@ -15,7 +17,7 @@ class Response:
         self.request = request
         self.trans_class = trans_class
 
-    def get_trans_class(self):
+    def get_trans_class(self) -> PGClass:
         return self.trans_class
 
     def __str__(self):

@@ -56,10 +56,10 @@ class PGClass:
         if not methods:
             return None
 
-        if args:
+        if args is not None:
             methods = PGClass.__filter_by_args(args, methods)
 
-        if return_type:
+        if return_type is not None:
             methods = PGClass.__filter_by_return_type(return_type, methods)
 
         return methods
@@ -102,15 +102,16 @@ class PGClass:
             return None
 
         pretty_args = ''
-        if need_args and method.args:
+        if need_args and (method.args is not None):
             pretty_args += '('
             for arg in method.args:
                 pretty_args += (arg + ',')
 
-        pretty_args = pretty_args.strip(',')
+            pretty_args = pretty_args.strip(',')
+            pretty_args += ')'
 
         pretty_return_type = ''
-        if need_return_type and method.return_type:
+        if need_return_type and (method.return_type is not None):
             pretty_return_type = method.return_type + ' '
 
         return pretty_return_type + self.name + '.' + method.name + pretty_args

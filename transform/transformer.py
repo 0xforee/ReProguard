@@ -3,6 +3,8 @@
 
 from abc import ABCMeta
 from transform.transformer_config import TransformerConfig
+import transform.transform_manager as transform_manager
+from transform.transform_api import Request, Response
 
 
 class ITransformer(metaclass=ABCMeta):
@@ -14,3 +16,15 @@ class ITransformer(metaclass=ABCMeta):
         :return:
         """
         pass
+
+    def get_raw_type(self, proguard_type: str):
+        response = transform_manager.transform(Request(proguard_type))
+        if response:
+            trans_class = response.get_trans_class()
+            if trans_class:
+                return trans_class.name
+
+        return proguard_type
+
+
+

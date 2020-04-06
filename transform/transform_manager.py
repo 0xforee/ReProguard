@@ -6,7 +6,7 @@ from transform.transform_api import Response, Request
 ENGINE = None
 
 
-def transform(request):
+def transform(request) -> Response:
     if not isinstance(request, Request):
         raise Exception(' not invalid args, need Request')
 
