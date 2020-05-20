@@ -54,8 +54,9 @@ class StackTraceTransformer(ITransformer):
         if response:
             trans_class = response.get_trans_class()
             if isinstance(trans_class, PGClass):
-                method = trans_class.find_method(method_name, method_line_number)
-                trans_method = trans_class.pretty_method(method)
+                methods = trans_class.find_methods(method_name, method_line_number)
+                # TODO: 适配多个方法满足的情况
+                trans_method = trans_class.pretty_method(methods[0])
 
                 if trans_method:
                     trans = origin_line.replace(info[info.find(' ') + 1:info.find('(')], trans_method)

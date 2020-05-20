@@ -126,7 +126,10 @@ class MappingLoader:
             md.return_type = method[:method.find(' ')]
             # 可能前边有行号
             if re.match(r'^\d', md.return_type):
-                md.source_scope = md.return_type[:md.return_type.rfind(':')]
+                # 增加虚拟行号，真实行号的支持
+                visual_line = md.return_type[:md.return_type.rfind(':')]
+                real_line = method[method.find(')') + 1:].strip(':')
+                md.add_source_scope(visual_line, real_line)
                 md.return_type = md.return_type[md.return_type.rfind(':') + 1:]
 
             md.name = method[method.find(' ') + 1: method.find('(')]
