@@ -44,10 +44,11 @@ class NanoscopeTransformer(ITransformer):
                 self.data_enter = True
                 # do parse
                 # deal with proGuard string
-                valid_info = line[line.index(':') + 1:]
-                trans = self.transform_method(line, valid_info)
-                if trans:
-                    return trans
+                if line.find(':') != -1:
+                    valid_info = line[line.index(':') + 1:]
+                    trans = self.transform_method(line, valid_info)
+                    if trans:
+                        return trans
                 return line
             else:
                 return line
