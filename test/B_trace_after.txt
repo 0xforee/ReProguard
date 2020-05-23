@@ -1,0 +1,19 @@
+java.lang.NullPointerException: Attempt to invoke virtual method 'boolean java.lang.String.startsWith(java.lang.String)' on a null object reference
+        at org.foree.bookreader.parser.ThirdSourceParser.parseSearchBook(SourceFile:145)
+        at org.foree.bookreader.parser.ThirdSourceParser.searchBook(SourceFile:53)
+        at org.foree.bookreader.parser.WebParser$1.run(SourceFile:167)
+
+
+1970-01-06 11:36:02.517 13834-13834/org.foree.bookreader E/AndroidRuntime: FATAL EXCEPTION: main
+    Process: org.foree.bookreader, PID: 13834
+    java.lang.NullPointerException: hahhsfsfsfd
+        at org.foree.bookreader.bookinfopage.BookInfoActivity.updateAddState(SourceFile:410)
+        at org.foree.bookreader.bookinfopage.BookInfoActivity.access$200(SourceFile:58)
+        at org.foree.bookreader.bookinfopage.BookInfoActivity$3$1.run(SourceFile:281)
+        at android.os.Handler.handleCallback(Handler.java:751)
+        at android.os.Handler.dispatchMessage(Handler.java:95)
+        at android.os.Looper.loop(Looper.java:154)
+        at android.app.ActivityThread.main(ActivityThread.java:6121)
+        at java.lang.reflect.Method.invoke(Native Method)
+        at com.android.internal.os.ZygoteInit$MethodAndArgsCaller.run(ZygoteInit.java:889)
+        at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:779)

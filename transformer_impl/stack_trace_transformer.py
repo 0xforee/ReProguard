@@ -19,16 +19,17 @@ class StackTraceTransformer(ITransformer):
                     output.write(trans_line)
 
     def parse_line(self, line):
-        print("trans..." + line)
+        print("trans start:" + line)
         obj = re.search(r'[ $0-9a-zA-Z.:]+\([$0-9a-zA-Z.:]*\)+', line)
         if not obj:
             return line
 
         matched_trace_info = obj.group()
-        trans = self.transform_method(line, matched_trace_info.strip())
+        trans = self.transform_method(matched_trace_info.strip())
         if trans:
-            line = line.replace(matched_trace_info, trans)
+            line = line.replace(matched_trace_info.strip(), trans)
 
+        print('trans end:  ' + line)
         return line
 
     def transform_with_line(self, info: str):
@@ -65,9 +66,10 @@ class StackTraceTransformer(ITransformer):
                     old_line_start = old_source[:old_source.find(':')]
                     offset = int(method_line_number) - int(old_line_start)
                     new_source = trans_method.real_source_scope[0]
-                    new_line_start = new_source[:new_source.find(':')]
-                    new_line = int(new_line_start) + offset
-                    info = info.replace(method_line_number, str(new_line))
+                    if new_source:  # 真实行号存在，且不为空字符串
+                        new_line_start = new_source[:new_source.find(':')]
+                        new_line = int(new_line_start) + offset
+                        info = info.replace(method_line_number, str(new_line))
 
                 trans = info.replace(info[info.find(' ') + 1:info.find('(')], trans_method_str)
                 return trans
@@ -92,7 +94,10 @@ class StackTraceTransformer(ITransformer):
                     method_args.append(arg.strip())
                 else:
                     trans_arg = arg_response.get_trans_class()
-                    method_args.append(trans_arg.name)
+                    if trans_arg:
+                        method_args.append(trans_arg.name)
+                    else:
+                        method_args.append(arg)
         # transform
         response = transform_manager.transform(Request(cla_name))
 
@@ -119,8 +124,6 @@ class StackTraceTransformer(ITransformer):
         return None
 
     def transform_method(self, info: str):
-        print('info : ' + info)
-
         # found line number
         if info.find(':') != -1:
             return self.transform_with_line(info)
