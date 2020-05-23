@@ -19,50 +19,113 @@ class StackTraceTransformer(ITransformer):
                     output.write(trans_line)
 
     def parse_line(self, line):
+        print("trans..." + line)
         obj = re.search(r'[ $0-9a-zA-Z.:]+\([$0-9a-zA-Z.:]*\)+', line)
-        if obj:
-            trans = self.transform_method(line, obj.group())
-            if trans:
-                return trans
+        if not obj:
+            return line
+
+        matched_trace_info = obj.group()
+        trans = self.transform_method(line, matched_trace_info.strip())
+        if trans:
+            line = line.replace(matched_trace_info, trans)
 
         return line
 
-    def transform_method(self, origin_line: str, info: str):
-        info = info.strip()
+    def transform_with_line(self, info: str):
         other = info[info.find(r' ') + 1:]
-        pre = other[:other.find('(')]
-        method_args = []
+        full_method_name = other[:other.find('(')]
 
-        cla_name = pre[:pre.rfind('.')]
-        method_name = pre[pre.rfind('.') + 1:]
-        method_line_number = ''
-
-        # args exits
-        if other[other.find('(') + 1] == ')':
-            pass
-        else:
-            if other.find(':'):  # 包含源码信息而不是参数信息
-                method_line_number = other[other.find(':') + 1:other.find(')')]
-            else:
-                args = other[other.find('(') + 1: other.find(')')]
-                for arg in args.split(','):
-                    method_args.append(arg.strip())
+        cla_name = full_method_name[:full_method_name.rfind('.')]
+        method_name = full_method_name[full_method_name.rfind('.') + 1:]
+        method_line_number = other[other.find(':') + 1: other.find(')')]
 
         # transform
         response = transform_manager.transform(Request(cla_name))
 
-        if response:
-            trans_class = response.get_trans_class()
-            if isinstance(trans_class, PGClass):
-                methods = trans_class.find_methods(method_name, method_line_number)
-                # TODO: 适配多个方法满足的情况
-                trans_method = trans_class.pretty_method(methods[0])
+        if not response:
+            return None
 
-                if trans_method:
-                    trans = origin_line.replace(info[info.find(' ') + 1:info.find('(')], trans_method)
-                    return trans
+        trans_class = response.get_trans_class()
+
+        if not isinstance(trans_class, PGClass):
+            return None
+        methods = trans_class.find_methods_by_line(method_name, method_line_number)
+        if methods:
+            # TODO: 适配多个方法满足的情况
+            if len(methods) > 1:
+                print('warning: found multi method matched, take first one ' + str(methods))
+            trans_method = methods[0]
+
+            if trans_method:
+                trans_method_str = trans_class.pretty_method(trans_method)
+
+                # get real line number
+                if trans_method.real_source_scope:
+                    old_source = trans_method.source_scope[0]
+                    old_line_start = old_source[:old_source.find(':')]
+                    offset = int(method_line_number) - int(old_line_start)
+                    new_source = trans_method.real_source_scope[0]
+                    new_line_start = new_source[:new_source.find(':')]
+                    new_line = int(new_line_start) + offset
+                    info = info.replace(method_line_number, str(new_line))
+
+                trans = info.replace(info[info.find(' ') + 1:info.find('(')], trans_method_str)
+                return trans
 
         return None
+
+    def transform_with_args(self, info: str):
+        other = info[info.find(r' ') + 1:]
+        full_method_name = other[:other.find('(')]
+        method_args = []
+        cla_name = full_method_name[:full_method_name.rfind('.')]
+        method_name = full_method_name[full_method_name.rfind('.') + 1:]
+
+        # args or sourceFile not exits
+        if other[other.find('(') + 1] == ')':
+            pass
+        else:
+            args = other[other.find('(') + 1: other.find(')')]
+            for arg in args.split(','):
+                arg_response = transform_manager.transform(Request(arg.strip()))
+                if not arg_response:
+                    method_args.append(arg.strip())
+                else:
+                    trans_arg = arg_response.get_trans_class()
+                    method_args.append(trans_arg.name)
+        # transform
+        response = transform_manager.transform(Request(cla_name))
+
+        if not response:
+            return None
+
+        trans_class = response.get_trans_class()
+
+        if not isinstance(trans_class, PGClass):
+            return None
+
+        methods = trans_class.find_methods(method_name, method_args)
+        if methods:
+            # TODO: 适配多个方法满足的情况
+            if len(methods) > 1:
+                print('warning: found multi method matched, take first one ' + str(methods))
+            trans_method = methods[0]
+
+            if trans_method:
+                trans_method_str = trans_class.pretty_method(trans_method, need_args=True)
+                trans = info.replace(info[info.find(' ') + 1:info.find('(') + 1], trans_method_str)
+                return trans
+
+        return None
+
+    def transform_method(self, info: str):
+        print('info : ' + info)
+
+        # found line number
+        if info.find(':') != -1:
+            return self.transform_with_line(info)
+        else:
+            return self.transform_with_args(info)
 
 
 def pretty_print(clas, indent=0):

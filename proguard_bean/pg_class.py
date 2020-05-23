@@ -67,7 +67,7 @@ class PGClass:
     虚拟行号可能有多个，因为这多个行号对应的是 exception 的调用栈，所以返回值会是多个方法名称
     详情看：https://www.guardsquare.com/en/products/proguard/manual/retrace#
     """
-    def find_methods(self, proguard_name, line_number):
+    def find_methods_by_line(self, proguard_name, line_number):
         if not self.methods:
             return None
         if not (proguard_name in self.methods):
@@ -76,7 +76,7 @@ class PGClass:
         if not methods:
             return None
         if len(methods) == 1:
-            return methods[0]
+            return methods
         results = []
         for method in methods:
             source_scope = method.get_source_scope()
